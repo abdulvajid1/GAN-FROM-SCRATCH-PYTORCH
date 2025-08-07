@@ -7,12 +7,18 @@ from typing import Annotated
 class Generator(nn.Module):
     """Generate new image from input sampled from normal distribution.
     """
-    def __init__(self):
+    def __init__(self, batch_size: int):
         super().__init__()
-        pass
+        self.batch_size = batch_size
+        
+        nn.Sequential(
+            
+        )
     
-    def forward(self, x):
-        pass
+    def forward(self, hidden_size):
+        p
+        
+        
     
 class Descriminator(nn.Module):
     """
@@ -20,10 +26,29 @@ class Descriminator(nn.Module):
     """
     def __init__(self):
         super().__init__()
-        pass
+        self.descriminator = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding='same'),
+            nn.BatchNorm2d(num_features=64),
+            nn.LeakyReLU(),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2),
+            nn.BatchNorm2d(num_features=128),
+            nn.LeakyReLU(),
+            nn.Conv2d(in_channels=124, out_channels=32, kernel_size=3, stride=1),
+            nn.BatchNorm2d(num_features=32),
+            nn.LeakyReLU(),
+            nn.Flatten(start_dim=1),
+            nn.Linear(in_features="don't know now", out_features=64),
+            nn.LeakyReLU(),
+            nn.Linear(64, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, 1),
+            nn.Sigmoid()
+        )
     
-    def forward(self, img, labels) -> Annotated[(list, float), "()"]:
-        pass
+    def forward(self, img_batch, labels) -> Annotated[(list, float), "()"]:
+        predictions = self.descriminator(img_batch)
+        return predictions
+        
     
 class DCGAN(nn.Module):
     """
@@ -51,8 +76,8 @@ class DCGAN(nn.Module):
         fake_labels = torch.zeros(size=(self.batch_size, ), device=self.device)
         
         # Descriminate
-        real_desc_pred = self.descrimator(real_img_batch, real_labels)
-        fake_desc_pred = self.descrimator(fake_img_batch, fake_labels) # Descrimating Generated image
+        real_desc_pred = self.descrimator(real_img_batch)
+        fake_desc_pred = self.descrimator(fake_img_batch) # Descrimating Generated image
         
         # Descriminator
         real_desc_loss = F.binary_cross_entropy(real_desc_pred, real_labels)
