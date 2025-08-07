@@ -7,16 +7,34 @@ from typing import Annotated
 class Generator(nn.Module):
     """Generate new image from input sampled from normal distribution.
     """
-    def __init__(self, batch_size: int):
+    def __init__(self, latent_dim):
         super().__init__()
-        self.batch_size = batch_size
+        self.latent_dim = latent_dim
         
-        nn.Sequential(
-            
+        # (input - 1) * stride - 2*padding + kernal size 
+        self.seq_pipe = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=self.latent_dim, out_channels=128, stride=1, kernel_size=4), # (128, 4, 4)
+            nn.BatchNorm2d(num_features=128),
+            nn.LeakyReLU(),
+            nn.ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=4, stride=2), #  (64, 10, 10)
+            nn.BatchNorm2d(num_features=64),
+            nn.LeakyReLU(),
+            nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=2, output_padding=1), # (32, 22, 22)
+            nn.BatchNorm2d(num_features=32),
+            nn.LeakyReLU(),
+            nn.ConvTranspose2d(in_channels=32, out_channels=16, kernel_size=4, stride=1), # (16, 25, 25)
+            nn.BatchNorm2d(num_features=16),
+            nn.LeakyReLU(),
+            nn.ConvTranspose2d(in_channels=16, out_channels=1, kernel_size=4, stride=1), # (1, 28, 28)
+            nn.Sigmoid()
         )
+        
     
-    def forward(self, hidden_size):
-        p
+    def forward(self, batch_size):
+        latent_inp = torch.rand_like((batch_size, self.latent_dim)) # (b, h)
+        x = torch.unsqueeze(torch.unsqueeze(latent_inp, dim=-1), dim=-1) # (b, h, 1, 1)
+        return self.seq_pipe(x)
+        
         
         
     
@@ -27,17 +45,19 @@ class Descriminator(nn.Module):
     def __init__(self):
         super().__init__()
         self.descriminator = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding='same'),
+            
+            # (inp + 1)/stride + 2*padding - kernal
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1, padding='same'), # (3, 28, 28) -> (64, 28, 28)
             nn.BatchNorm2d(num_features=64),
             nn.LeakyReLU(),
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2), # (128, 17, 17)
             nn.BatchNorm2d(num_features=128),
             nn.LeakyReLU(),
-            nn.Conv2d(in_channels=124, out_channels=32, kernel_size=3, stride=1),
+            nn.Conv2d(in_channels=128, out_channels=32, kernel_size=3, stride=2), # (32, 6, 6)
             nn.BatchNorm2d(num_features=32),
             nn.LeakyReLU(),
             nn.Flatten(start_dim=1),
-            nn.Linear(in_features="don't know now", out_features=64),
+            nn.Linear(in_features=1152, out_features=64),
             nn.LeakyReLU(),
             nn.Linear(64, 32),
             nn.LeakyReLU(),
