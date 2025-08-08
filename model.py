@@ -78,7 +78,7 @@ class DCGAN(nn.Module):
     def __init__(self,generator: Generator, descriminator: Descriminator, batch_size, device):
         super().__init__()
         self.generator = generator
-        self.descrimator = descriminator
+        self.descriminator = descriminator
         self.batch_size = batch_size
         self.device = device
     
@@ -96,8 +96,8 @@ class DCGAN(nn.Module):
         fake_labels = torch.zeros(size=(self.batch_size, ), device=self.device)
         
         # Descriminate
-        real_desc_pred = self.descrimator(real_img_batch).squeeze() # (5, 1)
-        fake_desc_pred = self.descrimator(fake_img_batch).squeeze() # Descrimating Generated image
+        real_desc_pred = self.descriminator(real_img_batch).squeeze() # (5, 1)
+        fake_desc_pred = self.descriminator(fake_img_batch).squeeze() # Descrimating Generated image
         
         # Descriminator
         real_desc_loss = F.binary_cross_entropy(real_desc_pred, real_labels)
